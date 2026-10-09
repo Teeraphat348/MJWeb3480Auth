@@ -13,12 +13,12 @@ export const CATEGORIES = [
 export const ProductSchema = z.object({
   id: z.number(),
   title: z.string().trim().min(2, "กรุณากรอกชื่อสินค้า"),
-  price: z.number({ error: "กรุณากรอกราคา" }).min(0, "ราคาต้องไม่ติดลบ"),
+  price: z.number({ message: "กรุณากรอกราคา" }).min(0, "ราคาต้องไม่ติดลบ"),
   stock: z
-    .number({ error: "กรุณากรอกจำนวนคงเหลือ" })
+    .number({ message: "กรุณากรอกจำนวนคงเหลือ" })
     .int("จำนวนคงเหลือต้องเป็นจำนวนเต็ม")
     .min(0, "จำนวนคงเหลือต้องไม่ติดลบ"),
-  category: z.enum(CATEGORIES, { error: "กรุณาเลือกหมวดหมู่" }),
+  category: z.enum(CATEGORIES, { message: "กรุณาเลือกหมวดหมู่" }),
   description: z.string().trim().optional(),
   image: z.string().url().optional(),
   thumbnail: z.string().url().optional(),
@@ -44,9 +44,9 @@ export const SORT_FIELDS = ["title", "price", "stock"] as const;
 
 export const SearchQuerySchema = z.object({
   q: z.string().trim(),
-  category: z.string().optional(),
+  category: z.string(),
   limit: z
-    .number({ error: "กรุณากรอกจำนวนรายการ" })
+    .number({ message: "กรุณากรอกจำนวนรายการ" })
     .int("จำนวนรายการต้องเป็นจำนวนเต็ม")
     .min(1, "อย่างน้อย 1 รายการ")
     .max(30, "ไม่เกิน 30 รายการ"),

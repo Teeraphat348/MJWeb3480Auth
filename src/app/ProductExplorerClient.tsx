@@ -11,7 +11,11 @@ import {
   SORT_FIELDS,
 } from "@/lib/products";
 
-export default function ProductExplorerClient() {
+interface ProductExplorerClientProps {
+  isLoggedIn?: boolean;
+}
+
+export default function ProductExplorerClient({ isLoggedIn }: ProductExplorerClientProps) {
   const [query, setQuery] = useState<SearchQuery>(defaultQuery);
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
@@ -29,15 +33,45 @@ export default function ProductExplorerClient() {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError("เกิดข้อผิดพลาดที่ไม่ทราบ 1");
+          setError("เกิดข้อผิดพลาดที่ไม่ทราบ");
         }
       }
     });
   }, [query]);
 
+  // ฟังก์ชันสำหรับปุ่มโหลดข้อมูล
+  const handleReloadData = () => {
+    startTransition(async () => {
+      try {
+        setError(null);
+        const data = await fetchProducts(query);
+        setProducts(data.products);
+        setTotal(data.total);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+        }
+      }
+    });
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">ค้นหาสินค้า</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-3xl font-bold">ค้นหาสินค้า</h1>
+        
+        {/* แสดงปุ่มโหลดข้อมูลเฉพาะเมื่อเข้าสู่ระบบแล้ว */}
+        {isLoggedIn && (
+          <button
+            onClick={handleReloadData}
+            className="border border-emerald-600 text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm bg-white"
+          >
+            โหลดข้อมูล
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <input
@@ -144,7 +178,25 @@ export default function ProductExplorerClient() {
               <p className="text-blue-600 font-bold text-lg mb-1">
                 ฿{product.price.toLocaleString()}
               </p>
-              <p className="text-xs text-gray-400">คงเหลือ: {product.stock}</p>
+              <p className="text-xs text-gray-400 mb-3">คงเหลือ: {product.stock}</p>
+
+              {/* แสดงปุ่มแก้ไข/ลบ เฉพาะเมื่อผู้ใช้เข้าสู่ระบบแล้ว */}
+              {isLoggedIn && (
+                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => alert(`แก้ไขสินค้า ID: ${product.id}`)}
+                    className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium py-1.5 px-3 rounded transition"
+                  >
+                    แก้ไข
+                  </button>
+                  <button
+                    onClick={() => alert(`ลบสินค้า ID: ${product.id}`)}
+                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium py-1.5 px-3 rounded transition"
+                  >
+                    ลบ
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
